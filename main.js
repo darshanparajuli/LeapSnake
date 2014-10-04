@@ -7,6 +7,10 @@ var previousFrame;
 
 var motionDir;
 
+var snakeGame;
+
+var frameTime, prevTime, currTime;
+
 $(function() {
   canvas = $("#canvas")[0];
   canvas.width = WIDTH;
@@ -16,7 +20,12 @@ $(function() {
   angle = 0.0;
 
   previousFrame = null;
-  
+
+  snakeGame = new Snake(WIDTH, HEIGHT, 20);
+  snakeGame.init();
+  frameTime = 0.0;  
+  currTime = Date.now();
+  prevTime = currTime;
   loop();
 });
 
@@ -31,7 +40,10 @@ Leap.loop({enableGestures: true}, function(frame) {
                                  gesture.direction[0]) * 180 / Math.PI;
           motionDir = getDirection(angle);
 
-          console.log(motionDir);
+          // console.log(motionDir);
+          if (motionDir != null) {
+            snakeGame.setMoveDir(motionDir);
+          }
           break;
         }
     });
@@ -56,30 +68,27 @@ function getDirection(ang) {
   return null;
 }
 
-function drawCircle(x, y, radius, r, g, b) {
-  ctx.beginPath();
-  ctx.arc(x, y, 50, 0, radius * Math.PI / 180, false);
-  console.log(radius);
-  ctx.fillStyle = 'rgb(' + r + ', ' + g + ', ' + b + ')';
-  ctx.fill();
-}
-
 function square(n) {
   return n * n;
 }
 
-function updateAll() {
-  
+function updateAll() { 
+  snakeGame.update(frameTime);
 }
 
 function drawAll() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  snakeGame.draw(ctx);
 }
 
 function loop() {
-    requestAnimationFrame(loop);
-    updateAll();
-    drawAll();
+  requestAnimationFrame(loop);
+  updateAll();
+  drawAll();
+
+  currTime = Date.now();
+  frameTime = (currTime - prevTime) / 1000.0;
+  prevTime = currTime;
 }
 
 function vectorMag(v) {
@@ -104,3 +113,30 @@ function vectorFindBiggestComponent(v) {
 
   return temp;
 }
+
+(function () {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
+            || window[vendors[x] + 'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function (callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function () {
+                    callback(currTime + timeToCall);
+                },
+                timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function (id) {
+            clearTimeout(id);
+        };
+}());
