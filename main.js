@@ -21,9 +21,9 @@ $(function() {
 
   previousFrame = null;
 
-  snakeGame = new Snake(WIDTH, HEIGHT, 20);
+  snakeGame = new Game(WIDTH, HEIGHT, 20);
   snakeGame.init();
-  frameTime = 0.0;  
+  frameTime = 0.0;
   currTime = Date.now();
   prevTime = currTime;
   loop();
@@ -42,14 +42,14 @@ Leap.loop({enableGestures: true}, function(frame) {
 
           // console.log(motionDir);
           if (motionDir != null) {
-            snakeGame.setMoveDir(motionDir);
+            snakeGame.moveSnake(motionDir);
           }
           break;
         }
     });
   }
-  
-  
+
+
   previousFrame = frame;
 });
 
@@ -72,7 +72,7 @@ function square(n) {
   return n * n;
 }
 
-function updateAll() { 
+function updateAll() {
   snakeGame.update(frameTime);
 }
 
